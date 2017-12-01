@@ -1,7 +1,20 @@
 {
 	"extends": "oharagroup",
+	"parser": "typescript-eslint-parser",
+	"plugins": [
+		"typescript"
+	],
 	"env": {
 		"mocha": true,
 		"protractor": true
+	},
+	"rules": {
+		"camelcase": "off",		// disabled for camelcase in interfaces
+		"no-empty-function": "off",  // disabled for concise constructors
+		"no-extra-parens": "off",	// disabled for type guards (e.g. ((<Foo>this).bar) => {...})
+		"no-undef": "off",		// disabled for private class properties
+		"no-unused-vars": "off",	// disabled for shorthand constructor params
+		"no-useless-constructor": "off",  // disabled for concise constructors
+		"typescript/no-unused-vars": "error"
 	}
 }

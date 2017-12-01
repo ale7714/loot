@@ -1,24 +1,30 @@
 import angular from "angular";
 
 export default class AuthenticationModel {
-	constructor($window, $http, $cacheFactory) {
-		this.$window = $window;
-		this.$http = $http;
-		this.$cacheFactory = $cacheFactory;
+	constructor(private readonly $window: angular.IWindowService, private readonly $http: angular.IHttpService, private readonly $cacheFactory: angular.ICacheFactoryService) {
 	}
 
-	get SESSION_STORAGE_KEY() {
+	// Set the Authorization header for all http requests
+	private setAuthorisationHeader(authenticationKey: string): void {
+		const headers: angular.IHttpRequestConfigHeaders = this.$http.defaults.headers || {};
+
+		headers.common = headers.common || {};
+		headers.common.Authorization = this.authorisation(authenticationKey);
+		this.$http.defaults.headers = headers;
+	}
+
+	get SESSION_STORAGE_KEY(): string {
 		return "lootAuthenticationKey";
 	}
 
 	// Checks if the API authorisation header is set
-	get isAuthenticated() {
+	get isAuthenticated(): boolean {
 		// Get the encoded credentials from sessionStorage
-		const authenticationKey = this.$window.sessionStorage.getItem(this.SESSION_STORAGE_KEY);
+		const authenticationKey: string | null = this.$window.sessionStorage.getItem(this.SESSION_STORAGE_KEY);
 
 		if (authenticationKey) {
 			// Set the Authorization header for all http requests
-			this.$http.defaults.headers.common.Authorization = this.authorisation(authenticationKey);
+			this.setAuthorisationHeader(authenticationKey);
 
 			return true;
 		}
@@ -28,42 +34,42 @@ export default class AuthenticationModel {
 	}
 
 	// Validate the user credentials and set the API authorisation header
-	login(username, password) {
+	login(username: string | null, password: string | null): angular.IPromise<void> {
 		// Base64 encode the credentials
-		const authenticationKey = this.$window.btoa(`${username}:${password}`);
+		const authenticationKey: string = this.$window.btoa(`${username}:${password}`);
 
 		// Validate the credentials
 		return this.$http.post("/logins", null, {
 			headers: {
 				Authorization: this.authorisation(authenticationKey)
 			}
-		}).then(() => {
+		}).then((): void => {
 			// Login successful, store the encoded credentials in sessionStorage
 			this.$window.sessionStorage.setItem(this.SESSION_STORAGE_KEY, authenticationKey);
 
 			// Set the Authorization header for all http requests
-			this.$http.defaults.headers.common.Authorization = this.authorisation(authenticationKey);
+			this.setAuthorisationHeader(authenticationKey);
 		});
 	}
 
 	// Clear the API authorisation header and stored credentials
-	logout() {
+	logout(): void {
 		// Remove the encoded credentials from sessionStorage
 		this.$window.sessionStorage.removeItem(this.SESSION_STORAGE_KEY);
 
 		// Clear the Authorization header for all http requests
-		this.$http.defaults.headers.common.Authorization = this.authorisation("");
+		this.setAuthorisationHeader("");
 
 		// Clear all http caches (except the template cache)
-		angular.forEach(this.$cacheFactory.info(), cache => {
-			if ("templates" !== cache.id) {
-				this.$cacheFactory.get(cache.id).removeAll();
+		angular.forEach(this.$cacheFactory.info(), (cache: angular.ICacheObject): void => {
+			if ("templates" !== cache.info().id) {
+				this.$cacheFactory.get(cache.info().id).removeAll();
 			}
 		});
 	}
 
 	// Helper function to construct basic authorization header value
-	authorisation(authenticationKey) {
+	authorisation(authenticationKey: string): string {
 		return `Basic ${authenticationKey}`;
 	}
 }
