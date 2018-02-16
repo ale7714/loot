@@ -8,6 +8,7 @@
 | Snyk (npm)			| [![Known Vulnerabilities](https://snyk.io/test/github/scottohara/loot/badge.svg)](https://snyk.io/test/github/scottohara/loot)																									|
 | Snyk (Gemfile)	| [![Known Vulnerabilities](https://snyk.io/test/github/scottohara/loot/badge.svg?targetFile=Gemfile.lock)](https://snyk.io/test/github/scottohara/loot?targetFile=Gemfile.lock)	|
 
+
 Description
 ===========
 Loot is a web-based personal finance management application.
